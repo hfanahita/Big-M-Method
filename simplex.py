@@ -16,10 +16,8 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
     y = np.zeros((m, n))
     theta_k = 0
     for j in range(n):
-        if j in j_N:
-            y[:, j] = np.dot(B_inverse, A[:, j])
-        else:
-            y[:, j] = 0
+        y[:, j] = np.dot(B_inverse, A[:, j])
+
     print("y: ", y)
     for j in range(n):
         if j in j_N:
