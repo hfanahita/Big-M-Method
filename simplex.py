@@ -41,16 +41,21 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
         minimum = math.inf
         exiting_index = -1
         for i in range(m):
-            if minimum > b_bar[i] / y[i, k]:
-                minimum = b_bar[i] / y[i, k]
-                exiting_index = i
+            if y[i, k] > 0:
+                if minimum > b_bar[i] / y[i, k]:
+                    minimum = b_bar[i] / y[i, k]
+                    exiting_index = i
+                    # r = i
         print("exiting_index: ", exiting_index)
         theta_k = minimum
         print("theta_k: ", theta_k)
         print("j_N: ", j_N)
+        # Calculating x_new
+        print("##################################################################################################")
         for j in range(n):
             print("j: ", j)
             if j == k:
+                print("theta_k: ", theta_k)
                 x[j] = theta_k
                 print("x[k]: ", x[j])
             elif j in j_N:
@@ -64,13 +69,25 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
                 x[j] = b_bar[i] - np.dot(y[i, k], theta_k)
                 print("x[", j, "]= ", x[j])
             print("x: ", x)
-        # j_N = k
-        # j_b = entering_index
+        print("##################################################################################################")
+        exiting_x_index = j_b[exiting_index]
+        print("exiting_x_index: ", exiting_x_index)
+        j_b[exiting_index] = k
+        print("j_b_new: ", j_b)
         index_to_replace = j_N.index(k)
-        j_N[index_to_replace] = exiting_index
-        index_to_replace = j_b.index(exiting_index)
-        j_b[index_to_replace] = k
+        print("entering: j_N.index(k)", index_to_replace)
+        print("j_N[index_to_replace]_before:", j_N[index_to_replace] )
+        j_N[index_to_replace] = exiting_x_index
+        print("j_N[index_to_replace]_after:", j_N[index_to_replace])
+        print("j_N new: ", j_N)
+        # index_to_replace = j_b.index(exiting_index)
+        # j_b[index_to_replace] = k
         B = A[:, j_b]
+        print("B_new: ", B)
+        # j_N = sorted(j_N)
+        # j_b = sorted(j_b)
+        # print("final j_N: ", j_N)
+        # print("final j_b: ", j_b)
         return simplex(m, n, c , A, b, B, x, j_N, j_b)
 
 
