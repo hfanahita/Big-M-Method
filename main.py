@@ -10,7 +10,7 @@ import matplotlib
 # n = int(input("Please enter the number of variables: "))
 n = 4
 # m = int(input("Please enter the number of the constructive constraints: "))
-m = 2
+m = 4
 # print("Please enter the n coefficients of the objective function: ")
 # c = np.array([])
 # for i in range(n):
@@ -22,10 +22,10 @@ m = 2
 # b = np.array([[x] for x in b_input])
 # b = np.array([[10],[3],[4]])
 # x = np.zeros(n)
-A = np.array([[2.0,1.0,0.0,0.0],[-1.0, 0.0, 1.0, -1.0]])
+A = np.array([[0.0,1.0,1.0,1.0],[1.0, 0.0, 0.0, 0.0],[0.0,1.0,1.0,1.0],[0.0,1.0,1.0,1.0]])
 print(A)
 
-print(adjust_variables(A,m,n))
+print(adjust_variables(A))
 # x = np.array([0.0,0.0,10.0,3.0,4.0])
 # B = [[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]
 # j_N = [0,1]
