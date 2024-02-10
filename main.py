@@ -1,5 +1,5 @@
 import numpy as np
-from simplex import *
+# from simplex import *
 from bigM import *
 import math
 import matplotlib
@@ -10,7 +10,7 @@ import matplotlib
 # n = int(input("Please enter the number of variables: "))
 n = 4
 # m = int(input("Please enter the number of the constructive constraints: "))
-m = 4
+m = 2
 # print("Please enter the n coefficients of the objective function: ")
 # c = np.array([])
 # for i in range(n):
@@ -22,10 +22,18 @@ m = 4
 # b = np.array([[x] for x in b_input])
 # b = np.array([[10],[3],[4]])
 # x = np.zeros(n)
-A = np.array([[0.0,1.0,1.0,1.0],[1.0, 0.0, 0.0, 0.0],[0.0,1.0,1.0,1.0],[0.0,1.0,1.0,1.0]])
-print(A)
+# A = np.array([[0.0,1.0,1.0,1.0],[1.0, 0.0, 0.0, 0.0],[0.0,1.0,1.0,1.0],[0.0,1.0,1.0,1.0]])
 
-print(adjust_variables(A))
+# A = np.array([[5.0,1.0,0.0],[1.0, 0.0, 0.0],[0.0,0.0,1.0]])
+A =np.array([[2,1,-1,0], [1,3,0,-1]])
+b = np.array([2,3])
+print(A)
+c = np.array([1,3,0,0])
+initial_basis(A,b,c)
+# A, j_b, num_of_artificial_vars = adjust_variables(A)
+# n_artificial_vars = adjust_variables(A)[1].shape[0]
+# print(adjust_objective_function_coefficients(c, n_artificial_vars))
+# print(adjust_variables(A)[1].shape[0])
 # x = np.array([0.0,0.0,10.0,3.0,4.0])
 # B = [[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]
 # j_N = [0,1]
