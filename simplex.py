@@ -1,12 +1,13 @@
 import math
 import numpy as np
 def simplex(m, n, c, A, b, B, x, j_N, j_b):
-    B_inverse = np.linalg.inv(B)
+    vectorized_num_correction = np.vectorize(num_correction)
+    B_inverse = vectorized_num_correction(np.linalg.inv(B))
     print("Data type of B_inverse:", B_inverse.dtype)
     print("Data type of b:", b.dtype)
     print("B_inverse: ", B_inverse)
     print("b: ", b, )
-    b_bar = np.dot(B_inverse, b)
+    b_bar = vectorized_num_correction(np.dot(B_inverse, b))
     print("b_bar: ", b_bar)
     print("j_b: ", j_b)
     print("c: ", c)
@@ -16,19 +17,19 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
     y = np.zeros((m, n))
     theta_k = 0
     for j in range(n):
-        y[:, j] = np.dot(B_inverse, A[:, j])
+        y[:, j] = vectorized_num_correction(np.dot(B_inverse, A[:, j]))
 
     print("y: ", y)
     for j in range(n):
         if j in j_N:
             print("y_j: ", y[:,j])
-            zj_cj[j] = np.dot(c_B, y[:,j]) - c[j]
+            zj_cj[j] = vectorized_num_correction(np.dot(c_B, y[:,j]) - c[j])
         else:
             zj_cj[j] = 0
     print("zj_cj: ", zj_cj)
-    zk_ck = np.max(zj_cj)
+    zk_ck = vectorized_num_correction(np.max(zj_cj))
     print("zk_ck: ", zk_ck)
-    k = np.argmax(zj_cj)
+    k = vectorized_num_correction(np.argmax(zj_cj))
     print("k: ", k)
     if zk_ck <= 0:
         return x
@@ -41,7 +42,7 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
         for i in range(m):
             if y[i, k] > 0:
                 if minimum > b_bar[i] / y[i, k]:
-                    minimum = b_bar[i] / y[i, k]
+                    minimum = vectorized_num_correction(b_bar[i] / y[i, k])
                     exiting_index = i
                     # r = i
         print("exiting_index: ", exiting_index)
@@ -60,11 +61,13 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
                 x[j] = 0
                 print(j, "is set to zero")
             else:
-                i = j_b.index(j)
+                # i = j_b.index(j)
+                print("np.where(j_b == int(j))[0]: ", np.where(j_b == int(j)))
+                i = np.where(j_b == int(j))[0][0]
                 print("i: ", i)
                 print("b_bar[i]: ", b_bar[i])
                 print("y[i, k]; ", y[i, k])
-                x[j] = b_bar[i] - np.dot(y[i, k], theta_k)
+                x[j] = vectorized_num_correction(b_bar[i] - np.dot(y[i, k], theta_k))
                 print("x[", j, "]= ", x[j])
             print("x: ", x)
         print("##################################################################################################")
@@ -72,7 +75,8 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
         print("exiting_x_index: ", exiting_x_index)
         j_b[exiting_index] = k
         print("j_b_new: ", j_b)
-        index_to_replace = j_N.index(k)
+        index_to_replace = np.where(j_N == int(k))[0][0]
+        # index_to_replace = j_N.index(k)
         print("entering: j_N.index(k)", index_to_replace)
         print("j_N[index_to_replace]_before:", j_N[index_to_replace] )
         j_N[index_to_replace] = exiting_x_index
@@ -116,3 +120,9 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
         theta_k = min {bbar_i/y_ik}
 
     '''
+
+def num_correction(num):
+    if abs(num) <1e-05:
+        return 0
+    else:
+        return num

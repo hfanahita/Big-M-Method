@@ -1,5 +1,4 @@
 import numpy
-
 from simplex import *
 import numpy as np
 def adjust_variables(A):
@@ -47,7 +46,7 @@ def adjust_variables(A):
 
         e_i[i,0] = 0
     return (A,np.sort(j_b.astype(int)),num_of_artificial_vars)
-def simplex(m, n, c, A, b, B, x, j_N, j_b):
+def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
     print("j_b: ", j_b)
     B_inverse = np.linalg.inv(B)
     b_bar = np.dot(B_inverse, b)
@@ -74,7 +73,27 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
     # if zk_ck[0] <= 0:
     if first_stop_condition(zj_cj):
         # first stop condition is met
-        return x
+        # if all artificial variables are equal to zero
+        if (x[artificial_vars_index] == np.zeros(artificial_vars_index.shape[0])).all():
+            # if any of the artificial variables are in j_b then start the process of getting rid of them
+            if (np.isin(artificial_vars_index, j_b)).any():
+                pass
+            else:
+                # if all the artificial variables are in j_N then simply remove them from everywhere and continue with normal simplex
+
+                j_N = np.setdiff1d(j_N, artificial_vars_index)
+                print("artificial_vars_index: ", artificial_vars_index)
+                print("c in simplex: ", c)
+                c = convert_back_objective_function_coefficients(c[:-artificial_vars_index.shape[0],:])
+                A = A[:,:-artificial_vars_index.shape[0]]
+                print("x: ", x)
+                x = x[:-artificial_vars_index.shape[0]]
+                print("simplex inputs: ", " m: ", m, " n : ", n - artificial_vars_index.shape[0], "\n", "c: ", c , "\n", "A: ", A, "\n","b: ", b, "\n", "B: ", B, "\n", "x: ", x, "\n", "j_N: ", j_N, " j_b", j_b)
+                return simplex(m, n - artificial_vars_index.shape[0], c, A, b, B, x, j_N, j_b)
+        else:
+        #     there is an artificial variable with a positive value in our basis which means that the LP is infeasible
+            return -2
+        # return x
     elif (y[:, k] <= 0).all():
         #unbound problem
         return -1
@@ -132,7 +151,7 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
         # j_b = sorted(j_b)
         # print("final j_N: ", j_N)
         # print("final j_b: ", j_b)
-        return simplex(m, n, c , A, b, B, x, j_N, j_b)
+        return m_simplex(m, n, c , A, b, B, x, j_N, j_b, artificial_vars_index)
 
 
 # a function to multiply an array of arrays to a vertical vector
@@ -191,7 +210,8 @@ def initial_basis(A,b,c):
     print("x: ", x)
     # print()
     print("**************** Simplex: ")
-    print(simplex(m,n+num_of_artificial_vars,c,A,b,B,x,j_N,j_b))
+    artificial_vars_index =np.arange(n, n+num_of_artificial_vars)
+    print(m_simplex(m,n+num_of_artificial_vars,c,A,b,B,x,j_N,j_b,artificial_vars_index))
 
 def first_stop_condition(zj_cj):
     for row in zj_cj:
@@ -199,3 +219,11 @@ def first_stop_condition(zj_cj):
             return False
 
     return True
+
+def convert_back_objective_function_coefficients(c):
+    c_new = np.zeros(c.shape[0])
+    print("c: ", c)
+    for i in range(c.shape[0]):
+        print("c[i,:]: ", c[i,:])
+        c_new[i] = c[i,1]
+    return c_new
