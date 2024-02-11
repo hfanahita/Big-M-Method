@@ -55,18 +55,11 @@ def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
     zj_cj = np.zeros((n,2))
     y = np.zeros((m, n))
     theta_k = 0
-    for j in range(n):
-        y[:, j] = np.dot(B_inverse, A[:, j])
+    y = pivoting_y(n, y, B_inverse, A)
 
     print("y: ", y)
 
-    for j in range(n):
-        if j in j_N:
-            print("y_j: ", y[:,j])
-            print("multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:]: ", multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:])
-            zj_cj[j,:] = multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:]
-        else:
-            zj_cj[j,:] = np.zeros((1,2))
+    zj_cj = pivoting_zj_cj(n, j_N, y, zj_cj, c_B, c)
     print("zj_cj: ", zj_cj)
     zk_ck,k = maximum(zj_cj)
     print("zk_ck: ", zk_ck)
@@ -78,7 +71,30 @@ def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
         if (x[artificial_vars_index] == np.zeros(artificial_vars_index.shape[0])).all():
             # if any of the artificial variables are in j_b then start the process of getting rid of them
             if (np.isin(artificial_vars_index, j_b)).any():
-                pass
+                # pass
+                # indices of the artificial variables in j_b
+                common_elements = np.intersect1d(artificial_vars_index, j_b)
+                indices_in_j_b = []
+                for element in common_elements:
+                    indices = np.where(j_b == element)[0]
+                    indices_in_j_b.append(indices)
+                for index in indices_in_j_b:
+                    if (y[index, :] == 0).all():
+                        # dependent row
+                        y = np.delete(y, index, axis=0)
+                    else:
+                        k = np.nonzero(y[index])[0][0]
+                        # pivoting element
+                        y_ik = y[index,k]
+                        exiting_index = index
+                        entering_index = k
+                        theta_k = 0
+                        x,B,j_b,j_N = pivoting_x(n, k, theta_k, exiting_index, x, j_N, j_b, b_bar, y, A)
+                        y = pivoting_y(n, y, np.linalg.inv(B), A)
+                        c_B = np.array([(c[int(i), :]) for i in j_b])
+                        zj_cj = pivoting_zj_cj(n, j_N, y, zj_cj, c_B, c)
+
+
             else:
                 # if all the artificial variables are in j_N then simply remove them from everywhere and continue with normal simplex
 
@@ -112,46 +128,7 @@ def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
         print("theta_k: ", theta_k)
         print("j_N: ", j_N)
         # Calculating x_new
-        print("##################################################################################################")
-        for j in range(n):
-            print("j: ", j)
-            if j == k:
-                print("theta_k: ", theta_k)
-                x[j] = theta_k
-                print("x[k]: ", x[j])
-            elif j in j_N:
-                x[j] = 0
-                print(j, "is set to zero")
-            else:
-                print("j_b: ", j_b)
-                # i = j_b.index(int(j))
-                i = np.where(j_b == int(j))[0][0]
-                print("i: ", i)
-                print("b_bar[i]: ", b_bar[i])
-                print("y[i, k]; ", y[i, k])
-                x[j] = b_bar[i] - np.dot(y[i, k], theta_k)
-                print("x[", j, "]= ", x[j])
-            print("x: ", x)
-        print("##################################################################################################")
-        exiting_x_index = j_b[exiting_index]
-        print("exiting_x_index: ", exiting_x_index)
-        j_b[exiting_index] = int(k)
-        print("j_b_new: ", j_b)
-        index_to_replace = np.where(j_N == int(k))[0][0]
-        print("entering: j_N.index(k)", index_to_replace)
-        print("j_N[index_to_replace]_before:", j_N[index_to_replace] )
-        j_N[index_to_replace] = exiting_x_index
-        print("j_N[index_to_replace]_after:", j_N[index_to_replace])
-        print("j_N new: ", j_N)
-        print("j_b: ", j_b)
-        # index_to_replace = j_b.index(exiting_index)
-        # j_b[index_to_replace] = k
-        B = A[:, j_b]
-        print("B_new: ", B)
-        # j_N = sorted(j_N)
-        # j_b = sorted(j_b)
-        # print("final j_N: ", j_N)
-        # print("final j_b: ", j_b)
+        x,B,j_b,j_N = pivoting_x(n, k, theta_k, exiting_index, x, j_N, j_b, b_bar, y, A)
         return m_simplex(m, n, c , A, b, B, x, j_N, j_b, artificial_vars_index)
 
 
@@ -228,3 +205,56 @@ def convert_back_objective_function_coefficients(c):
         print("c[i,:]: ", c[i,:])
         c_new[i] = c[i,1]
     return c_new
+
+
+def pivoting_x(n, k, theta_k, exiting_index, x, j_N, j_b, b_bar, y, A):
+    for j in range(n):
+        print("j: ", j)
+        if j == k:
+            print("theta_k: ", theta_k)
+            x[j] = theta_k
+            print("x[k]: ", x[j])
+        elif j in j_N:
+            x[j] = 0
+            print(j, "is set to zero")
+        else:
+            print("j_b: ", j_b)
+            # i = j_b.index(int(j))
+            i = np.where(j_b == int(j))[0][0]
+            print("i: ", i)
+            print("b_bar[i]: ", b_bar[i])
+            print("y[i, k]; ", y[i, k])
+            x[j] = b_bar[i] - np.dot(y[i, k], theta_k)
+            print("x[", j, "]= ", x[j])
+        print("x: ", x)
+    print("##################################################################################################")
+    exiting_x_index = j_b[exiting_index]
+    print("exiting_x_index: ", exiting_x_index)
+    j_b[exiting_index] = int(k)
+    print("j_b_new: ", j_b)
+    index_to_replace = np.where(j_N == int(k))[0][0]
+    print("entering: j_N.index(k)", index_to_replace)
+    print("j_N[index_to_replace]_before:", j_N[index_to_replace])
+    j_N[index_to_replace] = exiting_x_index
+    print("j_N[index_to_replace]_after:", j_N[index_to_replace])
+    print("j_N new: ", j_N)
+    print("j_b: ", j_b)
+    # index_to_replace = j_b.index(exiting_index)
+    # j_b[index_to_replace] = k
+    B = A[:, j_b]
+    return (x,B,j_b,j_N)
+
+def pivoting_y(n, y, B_inverse, A):
+    for j in range(n):
+        y[:, j] = np.dot(B_inverse, A[:, j])
+    return y
+
+def pivoting_zj_cj(n, j_N, y, zj_cj, c_B, c):
+    for j in range(n):
+        if j in j_N:
+            print("y_j: ", y[:,j])
+            print("multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:]: ", multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:])
+            zj_cj[j,:] = multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:]
+        else:
+            zj_cj[j,:] = np.zeros((1,2))
+    return zj_cj
