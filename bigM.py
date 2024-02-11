@@ -45,7 +45,8 @@ def adjust_variables(A):
                     break
 
         e_i[i,0] = 0
-    return (A,np.sort(j_b.astype(int)),num_of_artificial_vars)
+        # np.sort(j_b.astype(int))
+    return (A,j_b.astype(int),num_of_artificial_vars)
 def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
     print("j_b: ", j_b)
     B_inverse = np.linalg.inv(B)
@@ -203,7 +204,7 @@ def initial_basis(A,b,c):
             x[i] = b_bar[counter]
             counter += 1
     print("m: ", m , " n: ", n+num_of_artificial_vars)
-    print("A: ", A)
+    print("Initial A: \n", A)
     print("j_N: ", j_N)
     print("j_b: ", j_b)
     print("c: ", c)
