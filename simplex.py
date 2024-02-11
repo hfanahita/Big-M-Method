@@ -93,33 +93,6 @@ def simplex(m, n, c, A, b, B, x, j_N, j_b):
         return simplex(m, n, c , A, b, B, x, j_N, j_b)
 
 
-    '''
-     B = m*n matrix
-     bbar = inverse(B)b
-     j_b = []
-     j_n = []
-     c_B = non-zero elements of c in order
-     y_j:
-     if j in j_N:
-     inverse(B)*a_j
-     else
-     0
-     zj-cj
-    if j in j_n:
-        = c_B * y_j - c_j
-    else
-     0
-
-    zk-ck = max(zj-cj)
-
-    if zk-ck<=0:
-        return x
-    elseif y_k<=0:
-        return -1 (as an indicator of unboundness)
-    else
-        theta_k = min {bbar_i/y_ik}
-
-    '''
 
 def num_correction(num):
     if abs(num) <1e-05:

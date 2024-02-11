@@ -52,6 +52,8 @@ def adjust_variables(A):
 def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
     print("j_b: ", j_b)
     B_inverse = np.linalg.inv(B)
+    print("B_inverse.dtype: ", B_inverse.dtype)
+    print("b.dtype: ", b.dtype)
     b_bar = np.dot(B_inverse, b)
     c_B = np.array([(c[int(i),:]) for i in j_b])
     zj_cj = np.zeros((n,2))

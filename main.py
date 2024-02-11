@@ -1,41 +1,36 @@
 import numpy as np
-# from simplex import *
 from bigM import *
-import math
-import matplotlib
 #min cx
 #Ax=b
 # input : c: one dimensional array, A: m*n matrix, b: one dimensional array
 
-# n = int(input("Please enter the number of variables: "))
-n = 4
-# m = int(input("Please enter the number of the constructive constraints: "))
-m = 2
-# print("Please enter the n coefficients of the objective function: ")
-# c = np.array([])
-# for i in range(n):
-#     x = float(input())
-#     c = np.append(c,x)
-# c = np.array([-2, -6, 0, 0, 0])
+# Number of variables
+n = int(input("Please enter the number of variables: "))
+# Number of constraints
+m = int(input("Please enter the number of the constructive constraints: "))
 
-# b_input = input("Enter b").split()
-# b = np.array([[x] for x in b_input])
-# b = np.array([[10],[3],[4]])
-# x = np.zeros(n)
-# A = np.array([[0.0,1.0,1.0,1.0],[1.0, 0.0, 0.0, 0.0],[0.0,1.0,1.0,1.0],[0.0,1.0,1.0,1.0]])
+# Setting coefficients of the objective function
+print("Please enter the n coefficients of the objective function: ")
+c_input = input().strip()
 
-# A = np.array([[5.0,1.0,0.0],[1.0, 0.0, 0.0],[0.0,0.0,1.0]])
-A =np.array([[1,-2,3,1], [2,2,-1,-2], [3,0,2,-1]])
-b = np.array([[3],[6],[9]])
+c_elements = [float(x) for x in c_input.split()]
+c = np.array(c_elements, dtype=float)
+
+# Setting b
+b_input = input("Enter b").split()
+b = np.array([[float(x)] for x in b_input])
+
+print("Enter the elements of the coefficient matrix, row by row:")
+
+# Setting constraints' coefficient matrix aka A
+constraints = []
+for i in range(m):
+    constraints_input = input(f"Enter {n} elements for constraint {i + 1}, separated by spaces: ")
+    constraints_elements = [float(x) for x in constraints_input.split()]
+    constraints.append(constraints_elements)
+
+A = np.array(constraints, dtype=float)
+print("Input:")
 print(A)
-c = np.array([-4,2,-6,3])
+
 initial_basis(A,b,c)
-# A, j_b, num_of_artificial_vars = adjust_variables(A)
-# n_artificial_vars = adjust_variables(A)[1].shape[0]
-# print(adjust_objective_function_coefficients(c, n_artificial_vars))
-# print(adjust_variables(A)[1].shape[0])
-# x = np.array([0.0,0.0,10.0,3.0,4.0])
-# B = [[1.0,0.0,0.0],[0.0,1.0,0.0],[0.0,0.0,1.0]]
-# j_N = [0,1]
-# j_b = [2,3,4]
-# print(simplex(m,n,c,A,b,B,x,j_N,j_b))
