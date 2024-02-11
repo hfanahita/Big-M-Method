@@ -25,10 +25,10 @@ m = 2
 # A = np.array([[0.0,1.0,1.0,1.0],[1.0, 0.0, 0.0, 0.0],[0.0,1.0,1.0,1.0],[0.0,1.0,1.0,1.0]])
 
 # A = np.array([[5.0,1.0,0.0],[1.0, 0.0, 0.0],[0.0,0.0,1.0]])
-A =np.array([[-1,1,-1,0], [0,1,0,-1]])
-b = np.array([[2],[1]])
+A =np.array([[1,-2,3,1], [2,2,-1,-2], [3,0,2,-1]])
+b = np.array([[3],[6],[9]])
 print(A)
-c = np.array([-2,0,0,0])
+c = np.array([-4,2,-6,3])
 initial_basis(A,b,c)
 # A, j_b, num_of_artificial_vars = adjust_variables(A)
 # n_artificial_vars = adjust_variables(A)[1].shape[0]

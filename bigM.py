@@ -1,6 +1,8 @@
 import numpy
 from simplex import *
 import numpy as np
+global vectorized_num_correction
+vectorized_num_correction = np.vectorize(num_correction)
 def adjust_variables(A):
     # number of rows
     m = A.shape[0]
@@ -79,11 +81,29 @@ def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
                     indices = np.where(j_b == element)[0]
                     indices_in_j_b.append(indices)
                 for index in indices_in_j_b:
-                    if (y[index, :] == 0).all():
+                    k = -1
+                    # if (y[index, :] == 0).all():
+                    for i in range(n):
+                        if i not in j_b and i not in artificial_vars_index:
+                            if y[index, i] != 0:
+                                k = i
+                    if k == -1:
                         # dependent row
+                        print("dependent!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
                         y = np.delete(y, index, axis=0)
+                        j_b = np.delete(j_b, index, axis=0)
+                        c_B = np.delete(c_B, index, axis=0)
+                        b_bar = np.delete(b_bar,index, axis=0)
+                        b = np.delete(b, index, axis=0)
+                        m = m -1
+                        A = np.delete(A, index, axis=0)
+                        B = A[:, j_b]
                     else:
-                        k = np.nonzero(y[index])[0][0]
+                        # for i in range(n):
+                        #     if i not in j_b and i not in artificial_vars_index:
+                        #         if y[index, i] != 0:
+                        #             k = i
+                        # # k = np.nonzero(y[index])[0][0]
                         # pivoting element
                         y_ik = y[index,k]
                         exiting_index = index
@@ -95,18 +115,18 @@ def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
                         zj_cj = pivoting_zj_cj(n, j_N, y, zj_cj, c_B, c)
 
 
-            else:
+
                 # if all the artificial variables are in j_N then simply remove them from everywhere and continue with normal simplex
 
-                j_N = np.setdiff1d(j_N, artificial_vars_index)
-                print("artificial_vars_index: ", artificial_vars_index)
-                print("c in simplex: ", c)
-                c = convert_back_objective_function_coefficients(c[:-artificial_vars_index.shape[0],:])
-                A = A[:,:-artificial_vars_index.shape[0]]
-                print("x: ", x)
-                x = x[:-artificial_vars_index.shape[0]]
-                print("simplex inputs: ", " m: ", m, " n : ", n - artificial_vars_index.shape[0], "\n", "c: ", c , "\n", "A: ", A, "\n","b: ", b, "\n", "B: ", B, "\n", "x: ", x, "\n", "j_N: ", j_N, " j_b", j_b)
-                return simplex(m, n - artificial_vars_index.shape[0], c, A, b, B, x, j_N, j_b)
+            j_N = np.setdiff1d(j_N, artificial_vars_index)
+            print("artificial_vars_index: ", artificial_vars_index)
+            print("c in simplex: ", c)
+            c = convert_back_objective_function_coefficients(c[:-artificial_vars_index.shape[0],:])
+            A = A[:,:-artificial_vars_index.shape[0]]
+            print("x: ", x)
+            x = x[:-artificial_vars_index.shape[0]]
+            print("simplex inputs: ", " m: ", m, " n : ", n - artificial_vars_index.shape[0], "\n", "c: ", c , "\n", "A: ", A, "\n","b: ", b, "\n", "B: ", B, "\n", "x: ", x, "\n", "j_N: ", j_N, " j_b", j_b)
+            return simplex(m, n - artificial_vars_index.shape[0], c, A, b, B, x, j_N, j_b)
         else:
         #     there is an artificial variable with a positive value in our basis which means that the LP is infeasible
             return -2
@@ -135,7 +155,11 @@ def m_simplex(m, n, c, A, b, B, x, j_N, j_b, artificial_vars_index):
 # a function to multiply an array of arrays to a vertical vector
 def multiply(array_of_arrays,b):
     m = array_of_arrays.shape[0]
-    sum = np.zeros(m)
+    sum = np.zeros(2)
+    print("sum: ", sum)
+    print("array of arrays: \n", array_of_arrays)
+    print("array_of_arrays[i,:]: \n", array_of_arrays[0,:])
+    print("b \n", b)
     for i in range(m):
         sum = sum + array_of_arrays[i,:]*b[i,:]
     return sum
@@ -224,7 +248,7 @@ def pivoting_x(n, k, theta_k, exiting_index, x, j_N, j_b, b_bar, y, A):
             print("i: ", i)
             print("b_bar[i]: ", b_bar[i])
             print("y[i, k]; ", y[i, k])
-            x[j] = b_bar[i] - np.dot(y[i, k], theta_k)
+            x[j] = vectorized_num_correction(b_bar[i] - np.dot(y[i, k], theta_k))
             print("x[", j, "]= ", x[j])
         print("x: ", x)
     print("##################################################################################################")
@@ -246,7 +270,7 @@ def pivoting_x(n, k, theta_k, exiting_index, x, j_N, j_b, b_bar, y, A):
 
 def pivoting_y(n, y, B_inverse, A):
     for j in range(n):
-        y[:, j] = np.dot(B_inverse, A[:, j])
+        y[:, j] = vectorized_num_correction(np.dot(B_inverse, A[:, j]))
     return y
 
 def pivoting_zj_cj(n, j_N, y, zj_cj, c_B, c):
@@ -254,7 +278,7 @@ def pivoting_zj_cj(n, j_N, y, zj_cj, c_B, c):
         if j in j_N:
             print("y_j: ", y[:,j])
             print("multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:]: ", multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:])
-            zj_cj[j,:] = multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:]
+            zj_cj[j,:] = vectorized_num_correction(multiply(c_B,y[:,j].reshape(-1, 1)) - c[j,:])
         else:
             zj_cj[j,:] = np.zeros((1,2))
     return zj_cj
